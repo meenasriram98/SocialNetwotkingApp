@@ -120,4 +120,9 @@ public class Person {
 			+ ", username" + personalInfo.getUsername();
 	 }
 	 
+	 public String getOtherInfo()
+	 {
+		 return "Academic details:"+this.academicDetails+" work details: "+this.workDetails+" Hobbies: "+this.hobbies;
+	 }
+	 
 }

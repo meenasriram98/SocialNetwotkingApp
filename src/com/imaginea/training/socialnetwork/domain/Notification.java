@@ -8,5 +8,9 @@ public class Notification {
 	{
 		this.notification=notification;
 	}
+	
+	public String getNotification(){
+		return this.notification;
+	}
 
 }

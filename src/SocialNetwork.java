@@ -26,6 +26,13 @@ public class SocialNetwork {
 	static Scanner sc=new Scanner(System.in);
 	private static Object username;
 	public static void main(String[] args) {
+		PersonalInfo personalInfo=new PersonalInfo("1234", "meena@gmail", "meena", "meena", "sriram", Gender.FEMALE);
+    	Registration registration=new Registration(personalInfo,"1234");
+		register(registration,"meena@gmail","1234");
+		PersonalInfo personalInfo1=new PersonalInfo("1234", "keerti@gmail", "keerti", "keerti", "sriram", Gender.FEMALE);
+		Registration registration1=new Registration(personalInfo1,"1234");
+		register(registration1,"keerti@gmail","1234");
+		homePage("meena@gmail");
 		printMenu();
 		processInput();
 
@@ -33,13 +40,7 @@ public class SocialNetwork {
 	
 	public static void printMenu()
 	{
-		PersonalInfo personalInfo=new PersonalInfo("1234", "meena@gmail", "meena", "meena", "sriram", Gender.FEMALE);
-		Registration registration=new Registration(personalInfo,"1234");
-		register(registration,"meena@gmail","1234");
-		PersonalInfo personalInfo1=new PersonalInfo("1234", "keerti@gmail", "keerti", "keerti", "sriram", Gender.FEMALE);
-		Registration registration1=new Registration(personalInfo1,"1234");
-		register(registration1,"keerti@gmail","1234");
-		homePage("meena@gmail");
+//		
 		System.out.println("choose from the following");
 		System.out.println("1.Login 2.Register");
 	}
@@ -86,7 +87,8 @@ public class SocialNetwork {
 	
 	public static void printHomeMenu()
 	{
-		System.out.println("1.make post  2.Display my feed  3.View all users present  4.send friend request  5.show all requests 6.view home page 7.view your profile 8.view all friends");
+		System.out.println("1.make post  2.Display my feed  3.View all users present  4.send friend request  "
+				+ "5.show all requests 6.view home page 7.view your profile 8.view a users profile 9. View all friends 10. print notification 11. logout");
 	}
 	
 	public static void processHomeInput(String email)
@@ -123,6 +125,10 @@ public class SocialNetwork {
 				break;
 			case 10:
 				printNotifications(email);
+				break;
+			case 11:
+				logout(email);
+				break;
 			}
 		
 		
@@ -133,7 +139,9 @@ public class SocialNetwork {
 		List<Notification> notifications=p.getNotifications();
 		if(notifications!=null)
 		{
-			notifications.forEach(System.out::println);
+			for (Notification notification : notifications) {
+				System.out.println(notification.getNotification());
+			}
 			printHomeMenu();
 			processHomeInput(email);
 		}
@@ -203,7 +211,9 @@ public class SocialNetwork {
 			printHomeMenu();
 			processHomeInput(email);
 		}
-		friendsPosts.forEach(System.out::println);
+		for (Post post : friendsPosts) {
+			System.out.println(post.getContent());
+		}
 	}
 
 	public static void friendRequestsMenu()
@@ -306,6 +316,7 @@ public class SocialNetwork {
 		presentUsers=usersRepository.allPresentUsers();
 		presentUsers.forEach(person->{if(!person.getUniqueIdentifier().equals(email)) {
 			System.out.println(person.BasicInfo());
+			System.out.println(person.getOtherInfo());
 			printMutualFriends(email,person.getUniqueIdentifier());}
 		});
 		printHomeMenu();
@@ -346,6 +357,8 @@ public class SocialNetwork {
 		}
 		else {
 			posts.forEach(System.out::println);
+			printHomeMenu();
+			processHomeInput(email);
 			return;
 		}
 		
@@ -430,15 +443,22 @@ public class SocialNetwork {
 		saveToRepository(registration);
 		storeUserCredentials(email, password);
 		System.out.println("Account created successfully!!");
+//		printMenu();
+//		processInput();
 
 
 	}
 	
-	private void logout(String username) {
+	private static void logout(String username) {
 		if (authenticationService.logout(username))
+		{
 			System.out.println("Logout is successful!");
-		else
+			printMenu();
+			processInput();
+		}
+		else {
 			System.out.println("Logout is failed!");
+		}
 
 	}
 	
