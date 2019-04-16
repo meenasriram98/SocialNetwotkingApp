@@ -9,28 +9,26 @@ import com.imaginea.training.socialnetwork.domain.Post;
 
 public class FeedService {
 	
+
 	public List<String> showOwnFeed(String email)
 	{
 		UserRepository repository=UserRepository.getInstance();
-		return repository.displayfeed(email);
-	}
-
-	public List<Post> viewusersHomePage(String email) {
-		List<Post> friendsPosts=new ArrayList<>();
-		List<Person> friends=new ArrayList<>();
-		FriendService friendService=new FriendService();
-		friends=friendService.getFriends(email);
-		if(friends==null||friends.isEmpty())
+		List<Post> posts=new ArrayList<>();
+		List<String> postContent=new ArrayList<>();
+		Person person=repository.getPersonObject(email);
+		posts=person.getPosts();
+		if(posts==null)
 		{
-			System.out.println("you dont have any friends to show feed");
 			return null;
 		}
-		for (Person person : friends) {
-			for (Post post : person.getPosts()) {
-				friendsPosts.add(post);
-			}
-		}
+		posts.stream().forEach(post->postContent.add(post.getContent()));
+		return postContent;
+	}
+	
+	public List<Post> viewusersHomePage(String email) {
+		PostService postService=new PostService();
+		List<Post> friendsPosts=new ArrayList<>();
+		friendsPosts=postService.getFriendsPosts(email);
 		return friendsPosts;
-		
 	}
 }

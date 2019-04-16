@@ -1,14 +1,10 @@
 package com.imaginea.training.service;
-
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 import com.imaginea.training.data.UserRepository;
 import com.imaginea.training.socialnetwork.domain.FriendRequest;
 import com.imaginea.training.socialnetwork.domain.Person;
+import com.imaginea.training.socialnetwork.domain.Post;
 
 public class FriendService {
 	
@@ -17,9 +13,16 @@ public class FriendService {
 		List<String> errors=new ArrayList<>();
 		if(friendRequest.getpersonsEmail().equals(null)||friendRequest.getRecipientEmail().equals(null))
 		{
-			errors.add("entered email is null");
+			errors.add("enter correct email");
+			return errors;
 		}
-		errors=UserRepository.getInstance().addRequest(friendRequest);
+		Person person=UserRepository.getInstance().getPersonObject(friendRequest.getRecipientEmail());
+		errors=person.putRequest(friendRequest);
+		if(!errors.isEmpty())
+		{
+			return errors;
+		}
+		UserRepository.getInstance().updateRepository(friendRequest.getRecipientEmail(), person);
 		return errors;
 		
 	}
@@ -27,23 +30,43 @@ public class FriendService {
 	public List<FriendRequest> viewFriendRequests(String email)
 	{
 		List<FriendRequest> requests=new ArrayList<>();
-		requests=UserRepository.getInstance().viewFriendRequests(email);
+		Person person=UserRepository.getInstance().getPersonObject(email);
+		requests=person.getFriendRequests();
 		return requests;
 	}
 	
-	public boolean acceptRequest(String email,String senderEmail)
+	public void acceptRequest(String email,String senderEmail)
 	{
-		return UserRepository.getInstance().acceptFriendRequest(email,senderEmail);
+		NotificationService notification=new NotificationService();
+		String message=email+" accepted your friend request";
+		Person person=UserRepository.getInstance().getPersonObject(email);
+		Person friend=UserRepository.getInstance().getPersonObject(senderEmail);
+		person.addFriend(friend);
+		friend.addFriend(person);
+		UserRepository.getInstance().updateRepository(person.getUniqueIdentifier(),person);
+		UserRepository.getInstance().updateRepository(friend.getUniqueIdentifier(),friend);
+		notification.putNotification(friend,message);
 		
-	}
+	}   
 
-	public boolean declineRequest(String email, String senderEmail) {
-		return UserRepository.getInstance().declineFriendRequest(email,senderEmail);
+	public void declineRequest(String email, String senderEmail) {
+		Person person=UserRepository.getInstance().getPersonObject(email);
+		for (FriendRequest friendRequest : person.getFriendRequests()) {
+			if(friendRequest.getpersonsEmail().equals(senderEmail))
+			{
+				person.getFriendRequests().remove(friendRequest);
+				break;
+			}
+		}
+		UserRepository.getInstance().updateRepository(email, person);
 	}
 
 	public List<Person> getFriends(String email)
 	{
-		return UserRepository.getInstance().returnListOfFriends(email);
+		Person person=UserRepository.getInstance().getPersonObject(email);
+		List<Person> friends=new ArrayList<>();
+		friends=person.getFriends();
+		return friends;
 	}
 
 	public List<String> getMutualFriends(String email, String personsEmail) {
@@ -73,5 +96,21 @@ public class FriendService {
 		return mutualFriends;
 	}
 
+	public boolean checkIfFriends(String email, String userEmail) {
+		List<Person> friends=new ArrayList<>();
+		friends=getFriends(userEmail);
+		if(friends==null)
+		{
+			return false;
+		}
+		for (Person person : friends) {
+			if(person.getUniqueIdentifier().equals(email))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	
 }

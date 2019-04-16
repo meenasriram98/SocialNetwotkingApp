@@ -8,6 +8,7 @@ import com.imaginea.training.registration.Registration;
 import com.imaginea.training.service.AuthenticationService;
 import com.imaginea.training.service.FeedService;
 import com.imaginea.training.service.FriendService;
+import com.imaginea.training.service.PostService;
 import com.imaginea.training.socialnetwork.domain.FriendRequest;
 import com.imaginea.training.socialnetwork.domain.Gender;
 import com.imaginea.training.socialnetwork.domain.Notification;
@@ -22,6 +23,7 @@ public class SocialNetwork {
 	private static AuthenticationData authenticationData=AuthenticationData.getInstance();
 	static FriendService friendService=new FriendService();
 	static FeedService feedService=new FeedService();
+	static PostService postService=new PostService();
 
 	static Scanner sc=new Scanner(System.in);
 	private static Object username;
@@ -164,7 +166,7 @@ public class SocialNetwork {
 	private static void viewUsersProfile(String email) {
 		System.out.println("enter email of the person");
 		String userEmail=sc.next();
-		if(checkIfFriends(email,userEmail))
+		if(friendService.checkIfFriends(email,userEmail))
 		{
 			viewOwnProfile(userEmail);
 			displayPosts(userEmail);
@@ -185,22 +187,6 @@ public class SocialNetwork {
 		List<String> posts=new ArrayList<>();
 		posts=feedService.showOwnFeed(email);
 		posts.forEach(System.out::println);
-	}
-
-	private static boolean checkIfFriends(String email, String userEmail) {
-		List<Person> friends=new ArrayList<>();
-		friends=friendService.getFriends(userEmail);
-		if(friends==null)
-		{
-			return false;
-		}
-		for (Person person : friends) {
-			if(person.getUniqueIdentifier().equals(email))
-			{
-				return true;
-			}
-		}
-		return false;
 	}
 
 	private static void viewHomePage(String email) {
@@ -261,17 +247,14 @@ public class SocialNetwork {
 	}
 
 	private static void DeclineRequest(String email, String senderEmail) {
-		if(friendService.declineRequest(email,senderEmail))
-		{
-			System.out.println("request deleted");
-		}
+		friendService.declineRequest(email,senderEmail);
+		printHomeMenu();
+		processHomeInput(email);
 	}
 
 	private static void acceptRequest(String email, String senderEmail) {
-		if(friendService.acceptRequest(email, senderEmail))
-		{
-			System.out.println("friend request accepted");
-		}
+		friendService.acceptRequest(email, senderEmail);
+		System.out.println("friend request accepted");
 		printHomeMenu();
 		processHomeInput(email);
 	}
@@ -375,7 +358,7 @@ public class SocialNetwork {
 	public static void savePost(Post post,String email)
 	{
 		List<String> errors=new ArrayList<>();
-		errors=usersRepository.addPost(post, email);
+		errors=postService.addPost(post, email);
 		
 		if (!errors.isEmpty()) {
 			errors.forEach(System.out::println);
