@@ -17,8 +17,7 @@ public class UserRepository {
 	{
 		super();
 	}
-	
-	
+
 	public static UserRepository getInstance()
 	{
 		return INSTANCE;
@@ -46,6 +45,4 @@ public class UserRepository {
 	{
 		userData.put(key, value);
 	}
-	
-	
 }
